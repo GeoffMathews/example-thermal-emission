@@ -1,0 +1,105 @@
+
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+    <meta charset="utf-8">
+    <title>Thermal Spectrum</title>
+    <style>
+        body {background-color:aliceblue}
+        p    {color:mediumvioletred}
+    </style>
+    
+    <!-- Plotly for plotting, MIT license -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js">
+    </script>    
+    
+</head>
+
+    
+<body>
+    <h1>Thermal spectrum</h1>
+    
+    <p>This is a quick practice model of making a blackbody spectrum
+    </p>
+
+
+    <i>T</i> = 
+    <input type="text" id="A" size="6" value="Error"
+           min="1" max="100001"
+           onchange="document.getElementById('B').value=this.value; document.getElementById('C').value=this.value; updateBrightness(document.getElementById('C').value, wavelengths); Plotly.react( plotter, [{x: wavelengths, y: brightness }], { margin: { t: 0 } } );"
+           >
+    K<br>  
+  
+    1 K 
+    <input id="B" type ="range" min="1" max="100001" step="10" value="Error" 
+           oninput="document.getElementById('A').value=this.value; document.getElementById('C').value=this.value; updateBrightness(document.getElementById('C').value, wavelengths); Plotly.react(plotter, [{x: wavelengths, y: brightness }], { margin: { t: 0 } } );">
+    100,001 K <br><br>
+    
+    The temperature is 
+    <input type="text" id="C" size="6" value="Error" readonly="true">
+    K<br>
+    
+    <div id="spectrumPlot" style="width:600px;height:250px;"></div>    
+
+    Geoff Mathews, 2020 <br>
+    Using Plotly library
+
+    
+    
+    <!-- THIS BEGINS THE SCRIPTS -->
+    
+    <script type="text/javascript">
+        // INITIALIZE VALUES
+        // This is placed at the end of the script so that all elements load first
+        
+        
+
+        var initialTemperature = 5800
+        document.getElementById("A").value = initialTemperature;
+        document.getElementById("B").value = initialTemperature;
+        document.getElementById("C").value = initialTemperature;
+        
+        var wavelengths = [], waveMin = 10, waveMax = 1000, waveNum = 900;
+        var brightness = []
+        var waveStep = (Math.log10(waveMax) - Math.log10(waveMin)) / waveNum
+        for (i=0; i < waveNum; i++) {
+            newWavelength = Math.pow(10, waveStep * i + 1);
+            wavelengths.push(newWavelength);
+            newBrightness = PlanckFunction(document.getElementById("C").value, newWavelength)
+            brightness.push(newBrightness)
+            //console.log("lambda, brightness: ", i, newWavelength, newBrightness)
+        }
+
+        // initialize plot
+        plotter = document.getElementById('spectrumPlot');
+        Plotly.react( plotter, [{
+            x: wavelengths,
+            y: brightness }], {
+            margin: { t: 0 } } );
+        
+        function updateBrightness(temperature, wavelengths) {
+            brightness = [];
+            for (i=0; i < wavelengths.length; i++) {
+                newBrightness = PlanckFunction(document.getElementById("C").value, wavelengths[i])
+                brightness.push(newBrightness)
+                //console.log("lambda, brightness: ", i, wavelengths[i], newBrightness)
+            }
+            return brightness
+        }
+
+        function PlanckFunction(temperature, wavelength) {
+            var h = 6.626e-34; // m2 kg / s
+            var c = 2.997e8; // m/s, speed of light
+            var kb = 1.38e-23; // m2kg /s2 / K  Boltzmann constant
+  
+            return ((2 * h * c*c) / 
+                    Math.pow(wavelength * 1e-9,5) / 
+                    (Math.exp( h*c / (wavelength * 1e-9 * kb * temperature)) - 1));
+        }
+
+        
+    </script>
+
+    </body>
+</html>
